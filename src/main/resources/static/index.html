@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Online Product Ordering</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+	  background: linear-gradient(135deg, #ff9a9e, #fad0c4, #fad390);
+      color: #fff;
+      text-align: center;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+	  background: linear-gradient(135deg, #00c6ff, #0072ff);
+      padding: 30px;
+      border-radius: 15px;
+      width: 80%;
+      max-width: 900px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    h1, h2 {
+      color: #ffdd57;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+      background: #fff;
+      color: #000;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+    }
+
+    th {
+      background: #f4b400;
+      color: #fff;
+    }
+
+    input, select, button {
+      padding: 10px;
+      margin: 5px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+    }
+
+    button {
+      background: #ff5722;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background: #e64a19;
+    }
+
+    .delete-btn {
+      background: #d32f2f;
+    }
+
+    .delete-btn:hover {
+      background: #b71c1c;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Available Products</h1>
+  <table id="productsTable">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Price (₹)</th>
+        <th>Quantity</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>Place an Order</h2>
+  <form id="orderForm">
+    <input type="text" id="customerName" placeholder="Customer Name" required>
+    <select id="productId" required></select>
+    <input type="number" id="quantity" placeholder="Quantity" required>
+    <button type="submit">Order</button>
+  </form>
+
+  <h2>Orders</h2>
+  <table id="ordersTable">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Customer</th>
+        <th>Product</th>
+        <th>Quantity</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<script>
+  async function fetchProducts() {
+    const res = await fetch('/api/products');
+    const products = await res.json();
+    const tableBody = document.querySelector("#productsTable tbody");
+    const select = document.querySelector("#productId");
+    tableBody.innerHTML = '';
+    select.innerHTML = '<option value="">Select Product</option>';
+    products.forEach(p => {
+      tableBody.innerHTML += `<tr>
+        <td>${p.id}</td>
+        <td>${p.name}</td>
+        <td>${p.price}</td>
+        <td>${p.quantity}</td>
+      </tr>`;
+      select.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+    });
+  }
+
+  async function fetchOrders() {
+    const res = await fetch('/api/orders');
+    const orders = await res.json();
+    const tableBody = document.querySelector("#ordersTable tbody");
+    tableBody.innerHTML = '';
+    orders.forEach(o => {
+      tableBody.innerHTML += `<tr>
+        <td>${o.id}</td>
+        <td>${o.customerName}</td>
+        <td>${o.product?.name || 'N/A'}</td> <!-- If backend doesn’t return product, you’ll see N/A -->
+        <td>${o.quantity}</td>
+        <td><button class="delete-btn" onclick="deleteOrder(${o.id})">Delete</button></td>
+      </tr>`;
+    });
+  }
+
+  async function deleteOrder(id) {
+    if (confirm("Are you sure you want to delete this order?")) {
+      await fetch('/api/orders/' + id, { method: 'DELETE' });
+      alert("Order deleted successfully!");
+      fetchOrders();
+    }
+  }
+
+  document.querySelector("#orderForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const data = {
+      customerName: document.querySelector("#customerName").value,
+      productId: document.querySelector("#productId").value,
+      quantity: document.querySelector("#quantity").value
+    };
+    const res = await fetch('/api/orders', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(data)
+    });
+    const order = await res.json();
+    alert(`Order placed successfully!\nCustomer: ${order.customerName}\nProduct ID: ${order.productId}\nQuantity: ${order.quantity}`);
+    fetchOrders();
+    fetchProducts();
+    e.target.reset();
+  });
+
+  fetchProducts();
+  fetchOrders();
+</script>
+</body>
+</html>
