@@ -158,11 +158,12 @@
 
   document.querySelector("#orderForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const data = {
-      customerName: document.querySelector("#customerName").value,
-      productId: document.querySelector("#productId").value,
-      quantity: document.querySelector("#quantity").value
+   const data = {
+	  customerName: document.querySelector("#customerName").value,
+	  product: { id: document.querySelector("#productId").value },
+	  quantity: document.querySelector("#quantity").value
     };
+
     const res = await fetch('/api/orders', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
