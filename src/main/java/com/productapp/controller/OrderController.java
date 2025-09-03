@@ -7,7 +7,6 @@ import com.productapp.repository.ProductRepository;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -27,19 +26,23 @@ public class OrderController {
         return service.getAllOrders();
     }
 
-    // ✅ Place order with productId mapping
+    // ✅ Place order (fixes Product mapping)
     @PostMapping
-    public Order1 placeOrder(@RequestBody Map<String, Object> body) {
-        String customerName = (String) body.get("customerName");
-        int productId = (int) body.get("productId");
-        int quantity = (int) body.get("quantity");
+    public Order1 placeOrder(@RequestBody Order1 order) {
+        // Get productId from incoming order (frontend sends only { "productId": X })
+        if (order.getProduct() == null || order.getProduct().getId() == 0) {
+            throw new RuntimeException("Product ID is required in request");
+        }
 
-        // Fetch product from DB using productId
+        int productId = order.getProduct().getId();
+
+        // Fetch product from DB
         Product product = productRepo.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new RuntimeException("Product not found with id: " + productId));
 
-        // Create new order with mapped product
-        Order1 order = new Order1(customerName, product, quantity);
+        // Attach actual product object
+        order.setProduct(product);
+
         return service.placeOrder(order);
     }
 
