@@ -170,7 +170,7 @@
       body: JSON.stringify(data)
     });
     const order = await res.json();
-    alert(`Order placed successfully!\nCustomer: ${order.customerName}\nProduct ID: ${order.productId}\nQuantity: ${order.quantity}`);
+    alert(`Order placed successfully!\nCustomer: ${order.customerName}\nProduct Name: ${order.product?.name || "N/A"}\nQuantity: ${order.quantity}`);
     fetchOrders();
     fetchProducts();
     e.target.reset();
