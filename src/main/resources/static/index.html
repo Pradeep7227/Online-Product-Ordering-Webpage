@@ -141,7 +141,7 @@
       tableBody.innerHTML += `<tr>
         <td>${o.id}</td>
         <td>${o.customerName}</td>
-        <td>${order.product ? order.product.name : "N/A"}</td> <!-- If backend doesn’t return product, you’ll see N/A -->
+        <td>${o.product ? o.product.name : "N/A"}</td> <!-- If backend doesn’t return product, you’ll see N/A -->
         <td>${o.quantity}</td>
         <td><button class="delete-btn" onclick="deleteOrder(${o.id})">Delete</button></td>
       </tr>`;
